@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include "exec.h"
 #include "analyzer.h"
-#include "hist.h"
 #include "getcmd.h"
 
 void prompt();
@@ -21,11 +20,12 @@ int main() {
     }
     while (1) {
       prompt();
-      if(getcmd(&buf, &len, "\n\015"))
+      if(getcmd(&buf, &len, "\t\n") == -1)
           break;
       exec(argv, argc);
     }
-    free(argv);
+    if(buf != NULL)
+      free(buf);
     disable_raw();
     return 0;
 }

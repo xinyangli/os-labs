@@ -24,8 +24,9 @@ int enable_raw() {
   if(tcgetattr(STDIN_FILENO, &orig_termios) == -1)
     return 1;
   struct termios raw = orig_termios;
-  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-  raw.c_oflag &= ~(OPOST);
+//  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+  raw.c_iflag &= ~(BRKINT | INPCK | ISTRIP | IXON);
+//  raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
   if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
@@ -93,21 +94,32 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
 
   ptr_buf = *buf;
   while((ch = read_key()) > 0){
-
+//    write(STDOUT_FILENO, &ch, 1);
     int i = 0, in_delim = 0;
     /* Handle a seris of special keys */
     switch (ch) {
-      case EOF:
-        return 1;
       case ARROW_LEFT:
         if(ptr_buf > *buf) {
           ptr_buf--;
+          write(STDOUT_FILENO, "\x1b[D", 3);
         }
         break;
       case ARROW_RIGHT:
         if(ptr_buf < *buf + len) {
           ptr_buf++;
+          write(STDOUT_FILENO, "\x1b[C", 3);
         }
+        break;
+      case '\x08':
+      case '\x7f':
+        if(ptr_buf == *buf)
+          break;
+        for(char *p = ptr_buf; p < *buf + len; p++){
+          *p = *(p+1);
+        }
+        len--; ptr_buf--;
+        write(STDOUT_FILENO, "\x1b[D\x1b[K", 6);
+        write(STDOUT_FILENO, ptr_buf, len - (ptr_buf - *buf));
         break;
       default:
         /* check if this character is in delim */
@@ -124,15 +136,17 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
         len++;
         ptr_buf++;
         if(in_delim){
-          realloc(*buf, *n);
-          *n = len;
+          if(*n != len){
+            *buf = realloc(*buf, len + 1); // one more for \0
+            *n = len + 1;
+          }
           return len;
         }
 
         /* Prepare for next read */
-        if(len + 1 > *n){
+        if(len + 1 + 1 > *n){ // one more for null at the end
           size_t offset = ptr_buf - *buf;
-          realloc(*buf, block_size);
+          *buf = realloc(*buf, block_size);
           *n = block_size;
           block_size <<= 1;
           ptr_buf = *buf + offset;
@@ -142,5 +156,5 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
 
 
   }
-  return *n;
+  return -1;
 }

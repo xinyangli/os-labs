@@ -1,1 +1,5 @@
-int exec(const char *argv[], int argc);
+typedef struct Task {
+  char **argv;
+  char *argc;
+} Task;
+int exec(Task *task, size_t len);
