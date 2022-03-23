@@ -5,6 +5,7 @@
 #include "exec.h"
 #include "analyzer.h"
 #include "getcmd.h"
+#include "hist.h"
 
 void prompt();
 
@@ -18,15 +19,28 @@ int main() {
       perror("Failed to initialize terminal!\n");
       return -1;
     }
+    if(hist_init()) {
+      perror("Failed to initialize history buffer, not recording history\n");
+    }
     while (1) {
+      ssize_t ret;
       prompt();
-      if(getcmd(&buf, &len, "\t\n") == -1)
-          break;
+      ret = getcmd(&buf, &len, "\t\n");
+      if(ret == EOF)
+        break;
+      else if(ret == -2) {/* Received Ctrl + C */
+        write(STDOUT_FILENO, "\n", 1);
+        continue;
+      }
+
+      hist_save(buf);
+      buf = NULL; len = 0;
       exec(argv, argc);
     }
     if(buf != NULL)
       free(buf);
     disable_raw();
+    hist_free();
     return 0;
 }
 

@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
+#include <string.h>
 #include "getcmd.h"
+#include "hist.h"
 
 static struct termios orig_termios;
 
@@ -81,6 +83,7 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
   ssize_t len = 0;
   int ch = 0;
   char *ptr_buf;
+  char *output_buf;
 
   if(*buf == NULL) {
     *buf = malloc(block_size);
@@ -95,8 +98,9 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
   ptr_buf = *buf;
   while((ch = read_key()) > 0){
 //    write(STDOUT_FILENO, &ch, 1);
-    int i = 0, in_delim = 0;
+    int in_delim = 0;
     /* Handle a seris of special keys */
+    char * hist_display = NULL;
     switch (ch) {
       case ARROW_LEFT:
         if(ptr_buf > *buf) {
@@ -110,6 +114,46 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
           write(STDOUT_FILENO, "\x1b[C", 3);
         }
         break;
+
+      case ARROW_UP:
+      case ARROW_DOWN:
+        hist_display = (ch == ARROW_UP) ? hist_prev() : hist_next();
+        if(hist_display == NULL)
+          break;
+
+        if(len > 0) {
+          output_buf = malloc(30);
+          snprintf(output_buf, 30, "\x1b[%ldD\x1b[J", len); /* Clear current line */
+          write(STDOUT_FILENO, output_buf, strlen(output_buf)); /* Clear line */
+          free(output_buf);
+          output_buf = NULL;
+        }
+
+        len = strlen(hist_display);
+
+        /* eliminate the last deliminator */
+        for(int i = len - 1; i >= 0; i--){
+          int flag = 0;
+          for(int j = 0; j < strlen(delim); j++)
+            if(hist_display[i] == delim[j]){
+              hist_display[i] = '\0';
+              len = i;
+              flag = 1;
+              break;
+            }
+          if(flag)
+            break;
+        }
+        if(len + 1 > *n) {
+          *buf = realloc(*buf, len + 1);
+          *n = len + 1;
+        }
+        ptr_buf = *buf + len;
+        strncpy(*buf, hist_display, *n);
+        write(STDOUT_FILENO, *buf, len);
+        break;
+
+      /* Backspace and Delete */
       case '\x08':
       case '\x7f':
         if(ptr_buf == *buf)
@@ -121,25 +165,27 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
         write(STDOUT_FILENO, "\x1b[D\x1b[K", 6);
         write(STDOUT_FILENO, ptr_buf, len - (ptr_buf - *buf));
         break;
+      /* Ctrl + C */
+      case '\x03':
+        return -2;
       default:
         /* check if this character is in delim */
-        while(delim[i] != '\0') {
+        for(int i = 0; i < strlen(delim); i++) {
           if(ch == delim[i])
             in_delim = 1;
-          i++;
         }
         write(STDOUT_FILENO, &ch, 1);
         for(char *p = *buf + len; p > ptr_buf; p--) {
           *p = *(p-1);
         }
         *ptr_buf = ch;
-        len++;
-        ptr_buf++;
+        len++; ptr_buf++;
         if(in_delim){
-          if(*n != len){
+          if(*n > len + 1){
             *buf = realloc(*buf, len + 1); // one more for \0
             *n = len + 1;
           }
+          (*buf)[len] = '\0';
           return len;
         }
 
@@ -156,5 +202,5 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
 
 
   }
-  return -1;
+  return EOF;
 }

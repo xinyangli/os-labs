@@ -1,4 +1,4 @@
-OBJS := main.o exec.o signals.o hist.o analyzer.o getcmd.o
+OBJS := main.o exec.o signals.o hist.o analyzer.o getcmd.o stack.o
 INCLUDE := ../include
 CFLAGS += -I$(INCLUDE) -g
 
