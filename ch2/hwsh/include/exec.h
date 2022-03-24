@@ -2,7 +2,7 @@
 #define HWSH_EXEC_H
 typedef struct Task {
   char **argv;
-  char *argc;
+  size_t argc;
 } Task;
 int exec(Task *task, size_t len);
 
