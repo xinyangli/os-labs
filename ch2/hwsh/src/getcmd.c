@@ -83,7 +83,7 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
   ssize_t len = 0;
   int ch = 0;
   char *ptr_buf;
-  char *output_buf;
+  char output_buf[30];
 
   if(*buf == NULL) {
     *buf = malloc(block_size);
@@ -122,11 +122,8 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
           break;
 
         if(len > 0) {
-          output_buf = malloc(30);
           snprintf(output_buf, 30, "\x1b[%ldD\x1b[J", len); /* Clear current line */
           write(STDOUT_FILENO, output_buf, strlen(output_buf)); /* Clear line */
-          free(output_buf);
-          output_buf = NULL;
         }
 
         len = strlen(hist_display);
@@ -158,12 +155,17 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
       case '\x7f':
         if(ptr_buf == *buf)
           break;
+        ptr_buf--;
         for(char *p = ptr_buf; p < *buf + len; p++){
           *p = *(p+1);
         }
-        len--; ptr_buf--;
+        len--;
         write(STDOUT_FILENO, "\x1b[D\x1b[K", 6);
         write(STDOUT_FILENO, ptr_buf, len - (ptr_buf - *buf));
+
+        /* Move back cursor */
+        snprintf(output_buf, 30, "\x1b[%ldD", len - (ptr_buf - *buf));
+        write(STDOUT_FILENO, output_buf, strlen(output_buf));
         break;
       /* Ctrl + C */
       case '\x03':
