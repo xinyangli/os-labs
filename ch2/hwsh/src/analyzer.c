@@ -4,7 +4,7 @@
 #include "exec.h"
 
 static Task current_task;
-int scanner(char *buf, size_t *argc, char **argv) {
+int scanner(char buf[], size_t *argc, char **argv) {
   /*
   将传入的字符串按照空格分割
   参数解释: 
@@ -19,11 +19,10 @@ int scanner(char *buf, size_t *argc, char **argv) {
   size_t num = 0;
   if(buf == NULL || strlen(buf) == 0)
     return -1;
-  char* str = strtok(buf, " ");
-  while(str != NULL){
+  char *str, *cur = buf;
+  while(str = strsep(&cur, " ")){
     *argv ++ = str;
-    ++num;
-    str = strtok(NULL, " ");
+    num++;
   }
   *argc = num;
   return 0;
@@ -43,7 +42,7 @@ Task* create_task(char **argv, size_t argc){
   task->argc = argc;
   char** temp_argv = (char**) malloc(sizeof(char *) * argc);
   for(int i = 0; i < argc; ++i){
-    temp_argv[i] = (char*) malloc(sizeof(char) * strlen(argv[i]));
+    temp_argv[i] = (char*) malloc(sizeof(char) * (strlen(argv[i]) + 1));
     strcpy(temp_argv[i], argv[i]);
   }
   task->argv = temp_argv;
