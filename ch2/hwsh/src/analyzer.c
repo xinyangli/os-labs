@@ -49,6 +49,23 @@ Task* create_task(char **argv, size_t argc){
   return task;
 }
 
+int delete_task(Task* task){
+  /*
+  传入一个任务Task的指针，将该指针指向的内存释放
+  参数解释：
+    task：传入的任务指针
+  函数涉及销毁task指针的内存
+  返回值：
+    在正常情况下，返回值均为0,表示task的内存空间已被成功释放。
+  */
+  for(int i = 0; i < task->argc; ++i){
+    free(task->argv[i]);
+  }
+  free(task->argv);
+  free(task);
+  return 0;
+}
+
 int parser() {
   /*
   根据scanner的分割结果，分析命令是否输入完成
