@@ -162,7 +162,7 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
           *p = *(p+1);
         }
         len--; ptr_buf--;
-        write(STDOUT_FILENO, "\x1b[D\x1b[K", 6);
+        write(STDOUT_FILENO, "\x1b[D\x1b[J", 6);
         write(STDOUT_FILENO, ptr_buf, len - (ptr_buf - *buf));
         break;
       /* Ctrl + C */
