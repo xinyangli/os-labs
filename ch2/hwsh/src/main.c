@@ -29,7 +29,7 @@ int main() {
       if(ret == EOF)
         break;
       else if(ret == -2) {/* Received Ctrl + C */
-        write(STDOUT_FILENO, "\n", 1);
+        write(STDOUT_FILENO, "^C\n", 3);
         continue;
       }
 

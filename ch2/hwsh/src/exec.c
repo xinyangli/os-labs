@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <error.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include "exec.h"
@@ -11,7 +11,7 @@ typedef struct node{
     int val;
     struct node *next;
 }List;
-void print_error(int errno)
+void print_error()
 {
     switch(errno)
     {
@@ -36,12 +36,7 @@ void destroy_list(List *p)
 }
 
 int exec(Task *task, size_t len) {
-    printf("%s:\n", "argv");
-#ifdef DEBUG
-    for (int i = 0; i < current_line->argc; i++) {
-        printf("\t%s\n", current_line->argv[i]);
-    }
-#endif
+
     int concurrent=0;
     // 只有一条指令时，直接执行，不需要重定向
     if(len==1) 
@@ -60,7 +55,7 @@ int exec(Task *task, size_t len) {
     {
         if(pipe(pipefd) == -1) //创建管道，若失败则报错退出
         {
-            ERR_EXIT("pipe error");
+            fprintf(stderr, "pipe error");
         }
         pid_t pid;
         pid=fork();

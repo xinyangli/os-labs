@@ -1,5 +1,6 @@
 #ifndef HWSH_ANALYZER_H
 #define HWSH_ANALYZER_H
+#include "exec.h"
 
 #define MAX_ARGV_SIZE 64
 
