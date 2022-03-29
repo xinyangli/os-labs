@@ -1,0 +1,28 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install check, autotools
+      run: sudo apt-get install -y check autoconf automake
+    - name: mkdir
+      run: mkdir -p ./ch2/hwsh/build
+    - name: build
+      working-directory: ./ch2/hwsh/build
+      run: |
+        autoreconf --install ../
+        ../configure
+        make
+    - name: test
+      working-directory: ./ch2/hwsh/build
+      run: make check

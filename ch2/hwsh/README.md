@@ -1,5 +1,16 @@
 ## Install
- 
+```bash
+mkdir build
+cd build
+autoreconf --install
+../configure
+make
+```
+
+## Test
+```bash
+make check
+```
 
 ## Reference
 
