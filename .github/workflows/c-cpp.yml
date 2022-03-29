@@ -13,13 +13,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: install check
-      run: sudo apt-get install -y check
+    - name: install check, autotools
+      run: sudo apt-get install -y check autoconf automake
     - name: mkdir
       run: mkdir -p ./ch2/hwsh/build
-    - name: configure
+    - name: build
       working-directory: ./ch2/hwsh/build
       run: |
+        autoreconf --install ../
         ../configure
         make
-        make check
+    - name: test
+      working-directory: ./ch2/hwsh/build
+      run: make check
