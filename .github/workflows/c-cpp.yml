@@ -1,0 +1,25 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install check
+      run: apt-get install -y check
+    - name: mkdir
+      run: mkdir -p ./ch2/hwsh/build
+    - name: configure
+      working-directory: ./ch2/hwsh/build
+      run: |
+        ../configure
+        make
+        make check
