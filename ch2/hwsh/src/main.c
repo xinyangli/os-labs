@@ -41,6 +41,7 @@ int main() {
       free(buf);
     disable_raw();
     hist_free();
+    
     return 0;
 }
 
