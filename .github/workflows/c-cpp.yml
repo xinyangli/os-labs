@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: install check
-      run: apt-get install -y check
+      run: sudo apt-get install -y check
     - name: mkdir
       run: mkdir -p ./ch2/hwsh/build
     - name: configure
