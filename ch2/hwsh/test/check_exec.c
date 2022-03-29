@@ -36,6 +36,7 @@ START_TEST(exec_test_1) {
   // Single task
   char buf[256];
   int pipefd[2];
+  int status;
   int save_out = dup(STDOUT_FILENO);
   pipe(pipefd);
   pid_t pid = check_fork();
@@ -51,7 +52,8 @@ START_TEST(exec_test_1) {
     read(pipefd[0], buf, 4);
     buf[4] = '\0';
     close(pipefd[0]);
-    wait(NULL);
+    wait(&status);
+    ck_assert(WIFEXITED(status) && !WEXITSTATUS(status) == 1);
   }
   write(save_out, buf, 5);
   ck_assert_str_eq(buf, "test");
@@ -62,6 +64,7 @@ START_TEST(exec_test_2) {
   // Multiple tasks
   char buf[256];
   int pipefd[2];
+  int status;
   int save_out = dup(STDOUT_FILENO);
   pipe(pipefd);
   pid_t pid = check_fork();
@@ -69,8 +72,7 @@ START_TEST(exec_test_2) {
   if(pid == 0) {
     close(pipefd[0]);
     dup2(pipefd[1], STDOUT_FILENO);
-    printf("some");
-    exec(task, 4);
+    exec(task, 2);
     close(pipefd[1]);
     exit(0);
   } else {
@@ -78,8 +80,10 @@ START_TEST(exec_test_2) {
     read(pipefd[0], buf, 4);
     buf[4] = '\0';
     close(pipefd[0]);
-    wait(NULL);
+    wait(&status);
+    ck_assert(WIFEXITED(status) && !WEXITSTATUS(status) == 1);
   }
+  mark_point();
   write(save_out, buf, 5);
   ck_assert_str_eq(buf, "some");
 }
