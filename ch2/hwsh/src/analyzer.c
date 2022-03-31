@@ -27,6 +27,7 @@ int scanner(const char buf[], size_t *argc, char **argv) {
     buf: 待分割字符串
     argc: 分割后参数个数, 以地址的形式传入, 指针的形式返回
     argv: 分割后的字符串数组, 每个一级指针指向一个字符串， 每个二级指针指向一个字符
+  参数argv的只需要分配第一级指针，字符串分割后的指针的内存在函数内分配
   返回值：
     正常退出时, 返回值为0
     在其他非正常情况下返回-1
@@ -38,7 +39,6 @@ int scanner(const char buf[], size_t *argc, char **argv) {
   int l = 0, r = len - 1;
   while(buf[l] == ' ')  ++l;
   while(buf[r] == ' ')  --r;
-  printf("l : %d, r : %d\n", l, r);
   for(int p = l; p <= r; ++p){
     if(buf[p] == ' '){
       continue;
@@ -57,7 +57,6 @@ int scanner(const char buf[], size_t *argc, char **argv) {
     (*argv) = substr;
     argv++;
     num++;
-    printf("p : %d, k : %d\n", p, k);
     p = k;
   }
   *argc = num;
