@@ -8,6 +8,6 @@
 int scanner(const char buf[], size_t *argc, char **argv);
 Task* create_task(char **argv, size_t argc);
 int delete_task(Task* task);
-Task** parser(const char buf[], int* tasknum);
+Task** parser(const char buf[], size_t* tasknum);
 
 #endif // HWSH_ANALYZER_H
