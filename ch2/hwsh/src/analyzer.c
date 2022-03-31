@@ -43,6 +43,13 @@ int scanner(const char buf[], size_t *argc, char **argv) {
     if(buf[p] == ' '){
       continue;
     }
+    if(buf[p + 1] == ' ' || buf[p + 1] == '\0'){
+    	char* substr = subcmd(buf, p, p);
+    	(*argv) = substr;
+    	argv++;
+    	num++;
+    	continue;
+    }
     int k = p + 1;
     if(buf[p] == '\"'){
       while(k <= r && buf[k] != '\"') ++k;
