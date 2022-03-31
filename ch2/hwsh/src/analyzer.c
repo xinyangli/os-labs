@@ -38,9 +38,9 @@ int scanner(const char buf[], size_t *argc, char **argv) {
   int l = 0, r = len - 1;
   while(buf[l] == ' ')  ++l;
   while(buf[r] == ' ')  --r;
+  printf("l : %d, r : %d\n", l, r);
   for(int p = l; p <= r; ++p){
     if(buf[p] == ' '){
-      num++;
       continue;
     }
     int k = p + 1;
@@ -48,11 +48,16 @@ int scanner(const char buf[], size_t *argc, char **argv) {
       while(k <= r && buf[k] != '\"') ++k;
       if(k > r) return -1;
     }else{
-      while(k <= r && (buf[k + 1] != ' ' || buf[k + 1] != '\0'))   ++k;
+      while(k <= r){
+      	if(buf[k + 1] == ' ' || buf[k + 1] == '\0')	break;
+      	++k;
+      }
     }
     char* substr = subcmd(buf, p, k);
     (*argv) = substr;
     argv++;
+    num++;
+    printf("p : %d, k : %d\n", p, k);
     p = k;
   }
   *argc = num;
