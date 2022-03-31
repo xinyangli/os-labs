@@ -36,10 +36,10 @@ int scanner(const char buf[], size_t *argc, char **argv) {
   size_t len = cmdlen(buf);
   if(buf == NULL || len == 0)
     return -1;
-  int l = 0, r = len - 1;
+  size_t l = 0, r = len - 1;
   while(buf[l] == ' ')  ++l;
   while(buf[r] == ' ')  --r;
-  for(int p = l; p <= r; ++p){
+  for(size_t p = l; p <= r; ++p){
     if(buf[p] == ' '){
       continue;
     }
@@ -50,7 +50,7 @@ int scanner(const char buf[], size_t *argc, char **argv) {
     	num++;
     	continue;
     }
-    int k = p + 1;
+    size_t k = p + 1;
     if(buf[p] == '\"'){
       while(k <= r && buf[k] != '\"') ++k;
       if(k > r) return -1;
@@ -69,6 +69,7 @@ int scanner(const char buf[], size_t *argc, char **argv) {
   *argc = num;
   return 0;
 }
+
 
 Task* create_task(char **argv, size_t argc){
   /*
