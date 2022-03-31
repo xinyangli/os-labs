@@ -47,13 +47,13 @@ START_TEST(analyzer_test) {
   ck_assert_int_eq(ret, 0);
   ck_assert_int_eq(argc, test_argc[_i]);
   for(int i = 0; i < argc; i++){
-    ck_assert_pstr_eq(argv[i], test_argv[_i][i]);
+    ck_assert_str_eq(argv[i], test_argv[_i][i]);
   }
   Task *t;
   t = create_task(argv, argc);
   ck_assert_int_eq(t->argc, test_argc[_i]);
   for(int i = 0; i < t->argc; i++){
-    ck_assert_pstr_eq(t->argv[i], test_argv[_i][i]);
+    ck_assert_str_eq(t->argv[i], test_argv[_i][i]);
   }
 }
 END_TEST
