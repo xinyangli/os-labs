@@ -57,7 +57,7 @@ int scanner(const char buf[], size_t *argc, char **argv){
     if(buf[p] == ' '){
       continue;
     }
-    if(buf[p + 1] == ' ' || buf[p + 1] == '\0'){
+    if(buf[p] != '\"' && (buf[p + 1] == ' ' || buf[p + 1] == '\0')){
     	char* substr = subcmd(buf, p, p);
     	(*argv) = substr;
     	argv++;
