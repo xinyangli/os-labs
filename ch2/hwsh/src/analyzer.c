@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <analyzer.h>
 #include "exec.h"
 
 static Task current_task;
@@ -71,7 +72,7 @@ int scanner(const char buf[], size_t *argc, char **argv) {
 }
 
 
-Task* create_task(char **argv, size_t argc){
+Task* create_task(const char **argv, size_t argc){
   /*
   传入分割好的字符串数组和参数个数，创建并返回一个Task的指针型任务
   参数解释:
@@ -109,10 +110,19 @@ int delete_task(Task* task){
   return 0;
 }
 
-int parser() {
+Task** parser(const char buf[], int* tasknum) {
   /*
   根据scanner的分割结果，分析命令是否输入完成
   */
-
+  size_t pipe_loc[MAX_TASK_IN_LINE];
+  size_t num = 1;
+  for(size_t i = 0; i < cmdlen(buf); ++i){
+    if(buf[i] == '|'){
+      pipe_loc[num] = i;
+      num++;
+    }
+  }
+  Task** task_list = (Task**)malloc(sizeof(Task*) * num);
+  size_t task_ptr = 0;
   return 0;
 }
