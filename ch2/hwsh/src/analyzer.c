@@ -1,27 +1,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <analyzer.h>
+#include "analyzer.h"
 #include "exec.h"
 
 static Task current_task;
 
 size_t cmdlen(const char* str){
-  int len = 0;
+  size_t len = 0;
   while(str[len] != '\0') len++;
   return len;
 }
 
-char* subcmd(const char* str, int start, int end){
+char* subcmd(const char* str, size_t start, size_t end){
   char* substr = (char*)malloc(sizeof(char) * (end - start + 2));
-  for(int i = start; i <= end; ++i){
+  for(size_t i = start; i <= end; ++i){
     substr[i - start] = str[i];
   }
   substr[end - start + 1] = '\0';
   return substr;
 }
 
-int scanner(const char buf[], size_t *argc, char **argv) {
+int delete_cmd(char* str){
+  free(str);
+  return 0;
+}
+
+int delete_argv(char** argv){
+  for(size_t i = 0; i < MAX_ARGV_IN_CMD; ++i){
+    free(argv[i]);
+  }
+  free(argv);
+  return 0;
+}
+
+int scanner(const char buf[], size_t *argc, char **argv){
   /*
   将传入的字符串按照空格分割
   参数解释: 
@@ -71,8 +84,7 @@ int scanner(const char buf[], size_t *argc, char **argv) {
   return 0;
 }
 
-
-Task* create_task(const char **argv, size_t argc){
+Task* create_task(char **argv, size_t argc){
   /*
   传入分割好的字符串数组和参数个数，创建并返回一个Task的指针型任务
   参数解释:
@@ -85,7 +97,7 @@ Task* create_task(const char **argv, size_t argc){
   Task* task = (Task*) malloc(sizeof(Task));
   task->argc = argc;
   char** temp_argv = (char**) malloc(sizeof(char *) * argc);
-  for(int i = 0; i < argc; ++i){
+  for(size_t i = 0; i < argc; ++i){
     temp_argv[i] = (char*) malloc(sizeof(char) * (cmdlen(argv[i]) + 1));
     strcpy(temp_argv[i], argv[i]);
   }
@@ -102,7 +114,7 @@ int delete_task(Task* task){
   返回值：
     在正常情况下，返回值均为0,表示task的内存空间已被成功释放。
   */
-  for(int i = 0; i < task->argc; ++i){
+  for(size_t i = 0; i < task->argc; ++i){
     free(task->argv[i]);
   }
   free(task->argv);
@@ -111,9 +123,6 @@ int delete_task(Task* task){
 }
 
 Task** parser(const char buf[], int* tasknum) {
-  /*
-  根据scanner的分割结果，分析命令是否输入完成
-  */
   size_t pipe_loc[MAX_TASK_IN_LINE];
   size_t num = 1;
   for(size_t i = 0; i < cmdlen(buf); ++i){
@@ -124,5 +133,22 @@ Task** parser(const char buf[], int* tasknum) {
   }
   Task** task_list = (Task**)malloc(sizeof(Task*) * num);
   size_t task_ptr = 0;
-  return 0;
+  for(size_t i = 1; i <= num; ++i){
+    char* task_str;
+    size_t argc;
+    if(i == 1){
+      task_str = subcmd(buf, 0, pipe_loc[i] - 1);
+    }else if(i == num){
+      task_str = subcmd(buf, pipe_loc[i - 1] + 1, cmdlen(buf) - 1);
+    }else{
+      task_str = subcmd(buf, pipe_loc[i - 1] + 1, pipe_loc[i] - 1);
+    }
+    char** argv = (char**)malloc(sizeof(char*) * MAX_ARGV_IN_CMD);
+    scanner(task_str, &argc, argv);
+    task_list[task_ptr] = create_task(argv, argc);
+    task_ptr++;
+    delete_argv(argv);
+  }
+  *tasknum = num;
+  return task_list;
 }
