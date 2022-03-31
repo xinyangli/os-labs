@@ -26,8 +26,8 @@ int delete_cmd(char* str){
   return 0;
 }
 
-int delete_argv(char** argv){
-  for(size_t i = 0; i < MAX_ARGV_IN_CMD; ++i){
+int delete_argv(char** argv, size_t argc){
+  for(size_t i = 0; i < argc; ++i){
     free(argv[i]);
   }
   free(argv);
@@ -122,7 +122,7 @@ int delete_task(Task* task){
   return 0;
 }
 
-Task** parser(const char buf[], int* tasknum) {
+Task** parser(const char buf[], size_t* tasknum) {
   size_t pipe_loc[MAX_TASK_IN_LINE];
   size_t num = 1;
   for(size_t i = 0; i < cmdlen(buf); ++i){
@@ -147,7 +147,8 @@ Task** parser(const char buf[], int* tasknum) {
     scanner(task_str, &argc, argv);
     task_list[task_ptr] = create_task(argv, argc);
     task_ptr++;
-    delete_argv(argv);
+    free(task_str);
+    delete_argv(argv, argc);
   }
   *tasknum = num;
   return task_list;
