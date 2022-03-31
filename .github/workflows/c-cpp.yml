@@ -23,10 +23,6 @@ jobs:
         autoreconf --install ../
         ../configure
         make
-    - name: print test logs
-      working-directory: ./ch2/hwsh/build
-      run: |
-        cat test/*.log
     - name: test
       working-directory: ./ch2/hwsh/build
       run: "make check || cat test/*.log"
