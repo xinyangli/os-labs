@@ -29,4 +29,4 @@ jobs:
         cat test/*.log
     - name: test
       working-directory: ./ch2/hwsh/build
-      run: make check || cat test/*.log
+      run: "make check || cat test/*.log"
