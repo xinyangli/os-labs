@@ -52,8 +52,8 @@ int scanner(const char buf[], size_t *argc, char **argv){
     return -1;
   size_t l = 0, r = len - 1;
   while(buf[l] == ' ')  ++l;
-  while(buf[r] == ' ')  --r;
-  for(size_t p = l; p <= r; ++p){
+  while(buf[r] == ' ' || buf[r] == '\n' || buf[r] == '\0')  --r;
+  for(size_t p = l; p < r; ++p){
     if(buf[p] == ' '){
       continue;
     }
@@ -70,7 +70,7 @@ int scanner(const char buf[], size_t *argc, char **argv){
       if(k > r) return -1;
     }else{
       while(k <= r){
-      	if(buf[k + 1] == ' ' || buf[k + 1] == '\0')	break;
+      	if(buf[k + 1] == ' ' || buf[k + 1] == '\0' || buf[k + 1] == '\n')	break;
       	++k;
       }
     }
