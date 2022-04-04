@@ -20,7 +20,7 @@ void print_error()
         case ENOENT:fprintf(stderr,"No such file or directory!\n");break;
         case ENOMEM:fprintf(stderr,"Not enough space/cannot allocate memory!\n");break;
         case EEXIST:fprintf(stderr,"File exists!\n");break;
-        case EINVAL:fprintf(stderr,"Invalid argument!|n");break;
+        case EINVAL:fprintf(stderr,"Invalid argument!\n");break;
         default:fprintf(stderr,"Unknown error!\n");break;
     }
 }
@@ -45,7 +45,28 @@ int exec(Task *task, size_t len) {
     int old_pipefd[2], new_pipefd[2];
     for (int i=0;i<len;i++)
     {
-        if(i != len-1) {
+        if(strlen(task[i].argv[0]) >= 2 && !strncmp(task[i].argv[0], "cd", 2)) {
+          if(task[i].argc != 2) {
+            fprintf(stderr, "Require exactly 1 arguments, got %lu\n", task[i].argc - 1);
+          }
+          if(chdir(task[i].argv[1])) {
+            switch(errno) {
+              case EACCES:
+                fprintf(stderr, "Permission denied: %s\n", task[i].argv[1]);
+                break;
+              case ENOTDIR:
+                fprintf(stderr, "%s is not a directory\n", task[i].argv[1]);
+                break;
+              case ENOENT:
+                fprintf(stderr, "No such file or directory: %s\n", task[i].argv[1]);
+            }
+          }
+          continue;
+        }
+        if(strlen(task[i].argv[0]) >= 4 && !strncmp(task[i].argv[0], "exit", 4)) {
+          exit(EXIT_SUCCESS);
+        }
+        if(i != len-1 && i > 0) {
           if(pipe(new_pipefd) == -1) //创建管道，若失败则报错退出
           {
             fprintf(stderr, "pipe error");
@@ -55,6 +76,7 @@ int exec(Task *task, size_t len) {
         pid_t pid;
         pid=fork();
         if(pid==0){
+          signal(SIGINT, SIG_DFL);
             //child process
           // 从第二条指令开始需要重定向读端口
           if(i > 0){
@@ -78,8 +100,10 @@ int exec(Task *task, size_t len) {
             tmp->val=pid;
             tmp->next=head->next;
             head->next=tmp;
-            close(old_pipefd[0]);
-            close(old_pipefd[1]);
+            if(i > 0) {
+              close(old_pipefd[0]);
+              close(old_pipefd[1]);
+            }
             old_pipefd[0] = new_pipefd[0];
             old_pipefd[1] = new_pipefd[1];
         }

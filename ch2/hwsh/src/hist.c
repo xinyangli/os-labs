@@ -41,6 +41,12 @@ char *hist_prev(void) {
   return hist->data[current_ref];
 }
 
+char *hist_last(void) {
+  if(stack_empty(hist))
+    return NULL;
+  return hist->data[hist->top];
+}
+
 char *hist_next(void) {
   if(current_ref == (hist->top + 1) % hist->size)
     return NULL;

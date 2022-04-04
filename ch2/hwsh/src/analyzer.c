@@ -3,6 +3,7 @@
 #include <string.h>
 #include "analyzer.h"
 #include "exec.h"
+#include "hist.h"
 
 static Task current_task;
 
@@ -34,10 +35,10 @@ int delete_argv(char** argv, size_t argc){
   return 0;
 }
 
-int scanner(const char buf[], size_t *argc, char **argv){
+int scanner(char buf[], size_t *argc, char **argv){
   /*
   将传入的字符串按照空格分割
-  参数解释: 
+  参数解释:
     buf: 待分割字符串
     argc: 分割后参数个数, 以地址的形式传入, 指针的形式返回
     argv: 分割后的字符串数组, 每个一级指针指向一个字符串， 每个二级指针指向一个字符
@@ -53,11 +54,23 @@ int scanner(const char buf[], size_t *argc, char **argv){
   size_t l = 0, r = len - 1;
   while(buf[l] == ' ')  ++l;
   while(buf[r] == ' ' || buf[r] == '\n' || buf[r] == '\0')  --r;
-  for(size_t p = l; p < r; ++p){
+  for(size_t p = l; p <= r; ++p){
     if(buf[p] == ' '){
       continue;
     }
-    if(buf[p] != '\"' && (buf[p + 1] == ' ' || buf[p + 1] == '\0')){
+    if(buf[p] == '!') {
+      if(p + 1 <= r && buf[p + 1] == '!') {
+        char *last_cmd = hist_last();
+
+        char* substr = subcmd(last_cmd, 0, strlen(last_cmd) - 2);
+        (*argv) = substr;
+        argv++;
+        num++;
+        p += 2;
+        continue;
+      }
+    }
+    if(buf[p] != '\"' && (buf[p + 1] == ' ' || buf[p + 1] == '\0' || buf[p + 1] == '\n')){
     	char* substr = subcmd(buf, p, p);
     	(*argv) = substr;
     	argv++;
@@ -125,12 +138,14 @@ int delete_task(Task* task){
 Task** parser(const char buf[], size_t* tasknum) {
   size_t pipe_loc[MAX_TASK_IN_LINE];
   size_t num = 1;
+  size_t cmd_len = cmdlen(buf);
   for(size_t i = 0; i < cmdlen(buf); ++i){
     if(buf[i] == '|'){
       pipe_loc[num] = i;
       num++;
     }
   }
+  pipe_loc[num] = cmd_len - 1;
   Task** task_list = (Task**)malloc(sizeof(Task*) * num);
   size_t task_ptr = 0;
   for(size_t i = 1; i <= num; ++i){

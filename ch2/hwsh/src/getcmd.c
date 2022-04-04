@@ -163,9 +163,11 @@ ssize_t getcmd(char **buf, size_t *n, const char *delim) {
         write(STDOUT_FILENO, "\x1b[D\x1b[K", 6);
         write(STDOUT_FILENO, ptr_buf, len - (ptr_buf - *buf));
 
-        /* Move back cursor */
-        snprintf(output_buf, 30, "\x1b[%ldD", len - (ptr_buf - *buf));
-        write(STDOUT_FILENO, output_buf, strlen(output_buf));
+        if(ptr_buf < *buf + len) {
+          /* Move back cursor */
+          snprintf(output_buf, 30, "\x1b[%ldD", len - (ptr_buf - *buf));
+          write(STDOUT_FILENO, output_buf, strlen(output_buf));
+        }
         break;
       /* Ctrl + C */
       case '\x03':

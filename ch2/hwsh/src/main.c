@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include "exec.h"
 #include "analyzer.h"
 #include "getcmd.h"
@@ -24,18 +25,27 @@ int main() {
     }
     while (1) {
       ssize_t ret;
+      size_t task_cnt;
+      Task **t;
       prompt();
-      ret = getcmd(&buf, &len, "\t\n");
+      ret = getcmd(&buf, &len, "\n");
+      signal(SIGINT, SIG_IGN);
+      disable_raw();
       if(ret == EOF)
         break;
       else if(ret == -2) {/* Received Ctrl + C */
         write(STDOUT_FILENO, "^C\n", 3);
         continue;
       }
-
+      t = parser(buf, &task_cnt);
       hist_save(buf);
+      exec(*t, task_cnt);
+      if(enable_raw()) {
+        perror("Failed to initialize terminal!\n");
+        return -1;
+      }
+      signal(SIGINT, SIG_DFL);
       buf = NULL; len = 0;
-      exec(argv, argc);
     }
     if(buf != NULL)
       free(buf);
