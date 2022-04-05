@@ -1,0 +1,1 @@
+cmd_/home/admini/Documents/C_language/OS/os-labs/ch3/modules.order := {   echo /home/admini/Documents/C_language/OS/os-labs/ch3/task_dfs.ko;   echo /home/admini/Documents/C_language/OS/os-labs/ch3/task_list.ko; :; } | awk '!x[$$0]++' - > /home/admini/Documents/C_language/OS/os-labs/ch3/modules.order

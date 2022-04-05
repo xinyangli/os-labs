@@ -1,0 +1,1 @@
+cmd_/home/admini/Documents/C_language/OS/os-labs/ch3/task_list.ko := ld -r  -m elf_x86_64  --build-id=sha1  -T scripts/module.lds -o /home/admini/Documents/C_language/OS/os-labs/ch3/task_list.ko /home/admini/Documents/C_language/OS/os-labs/ch3/task_list.o /home/admini/Documents/C_language/OS/os-labs/ch3/task_list.mod.o;  true
