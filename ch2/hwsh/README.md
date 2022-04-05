@@ -11,6 +11,11 @@ make
 ```bash
 make check
 ```
+## Implemented feature
+- Execute program
+- Piping through programs
+- Use arrow key to navigate through historys
+- Expand !! to the latest command
 
 ## Reference
 
