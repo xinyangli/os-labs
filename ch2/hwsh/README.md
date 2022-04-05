@@ -1,8 +1,8 @@
 ## Install
 ```bash
+autoreconf --install
 mkdir build
 cd build
-autoreconf --install
 ../configure
 make
 ```
