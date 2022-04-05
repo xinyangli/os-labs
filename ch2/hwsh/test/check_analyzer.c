@@ -30,6 +30,16 @@ char *test_cmd[ANALYZE_TEST_SIZE] = {
     "bin/hwsh  \n",
 };
 
+char *test_pipe_cmd = "ls -a | grep config";
+char *test_pipe_ans[2][2] = {
+      {
+        "ls",
+        "-a"
+      }, {
+        "grep",
+        "config"
+      }
+};
 
 void setup(void) {
   ;
@@ -50,6 +60,20 @@ START_TEST(analyzer_test) {
 }
 END_TEST
 
+START_TEST(analyzer_test_pipe) {
+  Task **t;
+  size_t len = 0;
+  t = parser(test_pipe_cmd, &len);
+  ck_assert_int_eq(len, 2);
+  for(int i = 0; i < len; i++) {
+    ck_assert_int_eq(t[i]->argc , 2);
+    for(int j = 0; j < t[i]->argc; j++) {
+      ck_assert_str_eq(t[i]->argv[j], test_pipe_ans[i][j]);
+    }
+  }
+}
+END_TEST
+
 Suite *analyzer_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -58,6 +82,7 @@ Suite *analyzer_suite(void) {
   tc_core = tcase_create("Core");
 
   tcase_add_loop_test(tc_core, analyzer_test, 0, ANALYZE_TEST_SIZE);
+  tcase_add_test(tc_core, analyzer_test_pipe);
   suite_add_tcase(s, tc_core);
 
   return s;

@@ -13,9 +13,9 @@ size_t cmdlen(const char* str){
   return len;
 }
 
-char* subcmd(const char* str, size_t start, size_t end){
+char* subcmd(const char* str, int start, int end){
   char* substr = (char*)malloc(sizeof(char) * (end - start + 2));
-  for(size_t i = start; i <= end; ++i){
+  for(int i = start; i <= end; ++i){
     substr[i - start] = str[i];
   }
   substr[end - start + 1] = '\0';
@@ -51,10 +51,10 @@ int scanner(char buf[], size_t *argc, char **argv){
   size_t len = cmdlen(buf);
   if(buf == NULL || len == 0)
     return -1;
-  size_t l = 0, r = len - 1;
+  int l = 0, r = len - 1;
   while(buf[l] == ' ')  ++l;
   while(buf[r] == ' ' || buf[r] == '\n' || buf[r] == '\0')  --r;
-  for(size_t p = l; p <= r; ++p){
+  for(int p = l; p <= r; ++p){
     if(buf[p] == ' '){
       continue;
     }
@@ -62,7 +62,9 @@ int scanner(char buf[], size_t *argc, char **argv){
       if(p + 1 <= r && buf[p + 1] == '!') {
         char *last_cmd = hist_last();
 
-        char* substr = subcmd(last_cmd, 0, strlen(last_cmd) - 2);
+        char * substr = NULL;
+        if(last_cmd != NULL)
+          substr = subcmd(last_cmd, 0, strlen(last_cmd) - 2);
         (*argv) = substr;
         argv++;
         num++;
@@ -97,7 +99,7 @@ int scanner(char buf[], size_t *argc, char **argv){
   return 0;
 }
 
-Task* create_task(char **argv, size_t argc){
+int create_task(Task* task, char **argv, size_t argc){
   /*
   传入分割好的字符串数组和参数个数，创建并返回一个Task的指针型任务
   参数解释:
@@ -107,7 +109,7 @@ Task* create_task(char **argv, size_t argc){
   返回值:
     一个Task指针, 其两个参数分别为传入的两个参数
   */
-  Task* task = (Task*) malloc(sizeof(Task));
+//  Task* task = (Task*) malloc(sizeof(Task));
   task->argc = argc;
   char** temp_argv = (char**) malloc(sizeof(char *) * argc);
   for(size_t i = 0; i < argc; ++i){
@@ -115,7 +117,7 @@ Task* create_task(char **argv, size_t argc){
     strcpy(temp_argv[i], argv[i]);
   }
   task->argv = temp_argv;
-  return task;
+  return 0;
 }
 
 int delete_task(Task* task){
@@ -135,7 +137,7 @@ int delete_task(Task* task){
   return 0;
 }
 
-Task** parser(const char buf[], size_t* tasknum) {
+Task* parser(const char buf[], size_t* tasknum) {
   size_t pipe_loc[MAX_TASK_IN_LINE];
   size_t num = 1;
   size_t cmd_len = cmdlen(buf);
@@ -145,8 +147,8 @@ Task** parser(const char buf[], size_t* tasknum) {
       num++;
     }
   }
-  pipe_loc[num] = cmd_len - 1;
-  Task** task_list = (Task**)malloc(sizeof(Task*) * num);
+  pipe_loc[num] = cmd_len;
+  Task* task_list = (Task*)malloc(sizeof(Task) * num);
   size_t task_ptr = 0;
   for(size_t i = 1; i <= num; ++i){
     char* task_str;
@@ -160,7 +162,7 @@ Task** parser(const char buf[], size_t* tasknum) {
     }
     char** argv = (char**)malloc(sizeof(char*) * MAX_ARGV_IN_CMD);
     scanner(task_str, &argc, argv);
-    task_list[task_ptr] = create_task(argv, argc);
+    create_task(&(task_list[task_ptr]), argv, argc);
     task_ptr++;
     free(task_str);
     delete_argv(argv, argc);

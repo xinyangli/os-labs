@@ -8,8 +8,8 @@
 #define MAX_ARGV_IN_CMD  16
 
 int scanner(char buf[], size_t *argc, char **argv);
-Task* create_task(char **argv, size_t argc);
+int create_task(Task *task, char **argv, size_t argc);
 int delete_task(Task* task);
-Task** parser(const char buf[], size_t* tasknum);
+Task* parser(const char buf[], size_t* tasknum);
 
 #endif // HWSH_ANALYZER_H

@@ -20,8 +20,8 @@ char *test_argv[EXEC_TEST_SIZE][100] = {
         "command"
     }, {
         "cut",
-        "-d ",
-        "-f1"
+        "-d' '",
+        "-f2"
     }
 };
 
@@ -55,7 +55,7 @@ START_TEST(exec_test_1) {
     wait(&status);
     ck_assert(WIFEXITED(status) && !WEXITSTATUS(status) == 1);
   }
-  write(save_out, buf, 5);
+//  write(save_out, buf, 5);
   ck_assert_str_eq(buf, "test");
 }
 END_TEST
@@ -77,15 +77,15 @@ START_TEST(exec_test_2) {
     exit(0);
   } else {
     close(pipefd[1]);
-    read(pipefd[0], buf, 4);
-    buf[4] = '\0';
+    read(pipefd[0], buf, 6);
+    buf[7] = '\0';
     close(pipefd[0]);
     wait(&status);
     ck_assert(WIFEXITED(status) && !WEXITSTATUS(status) == 1);
   }
   mark_point();
-  write(save_out, buf, 5);
-  ck_assert_str_eq(buf, "some");
+  write(save_out, buf, 6);
+  ck_assert_str_eq(buf, "command");
 }
 END_TEST
 

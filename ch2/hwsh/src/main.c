@@ -26,7 +26,7 @@ int main() {
     while (1) {
       ssize_t ret;
       size_t task_cnt;
-      Task **t;
+      Task *t;
       prompt();
       ret = getcmd(&buf, &len, "\n");
       signal(SIGINT, SIG_IGN);
@@ -39,7 +39,7 @@ int main() {
       }
       t = parser(buf, &task_cnt);
       hist_save(buf);
-      exec(*t, task_cnt);
+      exec(t, task_cnt);
       if(enable_raw()) {
         perror("Failed to initialize terminal!\n");
         return -1;

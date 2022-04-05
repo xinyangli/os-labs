@@ -1,7 +1,7 @@
 TESTS = check_analyzer check_exec
 check_PROGRAMS = check_analyzer check_exec
 
-check_analyzer_SOURCES = check_analyzer.c $(top_srcdir)/src/analyzer.c
+check_analyzer_SOURCES = check_analyzer.c $(top_srcdir)/src/analyzer.c $(top_srcdir)/src/hist.c $(top_srcdir)/src/stack.c
 check_analyzer_CPPFLAGS = -I$(top_srcdir)/include
 check_analyzer_CFLAGS = @CHECK_CFLAGS@
 check_analyzer_LDADD = @CHECK_LIBS@

@@ -11,13 +11,12 @@ typedef struct node{
     int val;
     struct node *next;
 }List;
-void print_error()
+void print_error(Task t)
 {
     switch(errno)
     {
         case E2BIG:fprintf(stderr,"Argument list too long!\n");break;
-        case ENOTDIR:fprintf(stderr,"Not a directory!\n");break;
-        case ENOENT:fprintf(stderr,"No such file or directory!\n");break;
+        case ENOENT:fprintf(stderr,"No such file or directory: %s\n", t.argv[0]);break;
         case ENOMEM:fprintf(stderr,"Not enough space/cannot allocate memory!\n");break;
         case EEXIST:fprintf(stderr,"File exists!\n");break;
         case EINVAL:fprintf(stderr,"Invalid argument!\n");break;
@@ -41,10 +40,21 @@ int exec(Task *task, size_t len) {
     List *head;
     head=(List *)malloc(sizeof(List));
     head->next=NULL;
-    // 当有>=2条指令时，需要重定向
+#ifdef DEBUG
+    printf("len:%lu\n", len);
+    for(int i = 0; i < len; i++) {
+      printf("task[i]: %p\n", task + i);
+      for(int k = 0; k < task[i].argc; k++) {
+        printf("%d: %s\n", i, task[i].argv[k]);
+      }
+    }
+#endif
+  // 当有>=2条指令时，需要重定向
     int old_pipefd[2], new_pipefd[2];
     for (int i=0;i<len;i++)
     {
+        if(task[i].argc == 0)
+          continue;
         if(strlen(task[i].argv[0]) >= 2 && !strncmp(task[i].argv[0], "cd", 2)) {
           if(task[i].argc != 2) {
             fprintf(stderr, "Require exactly 1 arguments, got %lu\n", task[i].argc - 1);
@@ -66,7 +76,7 @@ int exec(Task *task, size_t len) {
         if(strlen(task[i].argv[0]) >= 4 && !strncmp(task[i].argv[0], "exit", 4)) {
           exit(EXIT_SUCCESS);
         }
-        if(i != len-1 && i > 0) {
+        if(i != len-1) {
           if(pipe(new_pipefd) == -1) //创建管道，若失败则报错退出
           {
             fprintf(stderr, "pipe error");
@@ -91,7 +101,7 @@ int exec(Task *task, size_t len) {
                 close(new_pipefd[1]);
             }
             execvp(task[i].argv[0],task[i].argv);
-            print_error();
+            print_error(task[i]);
             exit(EXIT_FAILURE);
         } else {
             //parent process
